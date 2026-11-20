@@ -150,6 +150,14 @@ def process_downloads(state):
             if time.time() - stat.st_mtime < 4:
                 continue
             result = inspect(p)
+            # Trigger the actual Windows malware scanner for downloaded executable content.
+            if p.suffix.lower() in DANGEROUS:
+                try:
+                    scan_file(p)
+                    result['defender_scan'] = 'completed'
+                except Exception as exc:
+                    result['defender_scan'] = 'failed: ' + str(exc)
+                    log_event('defender', 'warning', 'A varredura do download falhou', p, error=str(exc))
             seen[key] = identity
             if result['score']:
                 log_event('download', 'warning' if result['score'] < 60 else 'high',
@@ -164,6 +172,11 @@ def process_downloads(state):
 def process_defender(state):
     previous = set(str(x) for x in state.setdefault('defender_ids', []))
     detections = defender_threats()
+    # First run: baseline historic detections; only notify about newly observed records.
+    if not state.get('defender_initialized'):
+        state['defender_ids'] = [hashlib.sha256(json.dumps(item, sort_keys=True, default=str).encode()).hexdigest() for item in detections][-500:]
+        state['defender_initialized'] = True
+        return
     for item in detections:
         marker = json.dumps(item, sort_keys=True, default=str)
         identity = hashlib.sha256(marker.encode()).hexdigest()
@@ -242,7 +255,3 @@ def acknowledge(event_id, action):
     prepare()
     with DECISIONS.open('a', encoding='utf-8') as f:
         f.write(json.dumps({'event_id': event_id, 'action': action, 'time': now()}) + '\n')
-    try:
-        ALERT.unlink(missing_ok=True)
-    except OSError:
-        pass
