@@ -1,4 +1,4 @@
-# RedHat 0.1 — Windows Security CLI + background monitor
+# RedHat 0.2 — Windows Security CLI + background monitor
 
 Protótipo defensivo **em desenvolvimento** para Windows 10/11. CLI e observador são processos separados: fechar o terminal de controle não encerra o monitor instalado. O monitor verifica a pasta Downloads a cada ~8 segundos, solicita análise do Microsoft Defender para novos downloads de tipos executáveis e consulta novas detecções do Defender a cada ~45 segundos, mantém logs JSONL e abre outro CMD quando encontra alertas de risco alto para pedir uma decisão. Nenhum arquivo é colocado em quarentena sem aprovação explícita.
 
@@ -50,3 +50,13 @@ Se Python não estiver no PATH após instalá-lo, abra outro terminal. A execuç
 - Notificação nativa Windows em vez de apenas janela CMD.
 - Integração de extensão de navegador para inspeção de URLs de forma transparente e com consentimento.
 - Empacotamento `.exe` assinado e instalador com desinstalação completa.
+
+## V0.2: comando global, Web Shield experimental e Tor
+
+Depois de executar novamente `install.ps1`, **abra um novo CMD** e digite `redhat` para abrir o painel, `redhat web` para verificar o cache DNS, ou `redhat tor` para localizar e abrir o Tor Browser após confirmação.
+
+O monitor consulta periodicamente o cache DNS do Windows e compara os nomes com `%LOCALAPPDATA%\\RedHat\\blocked-domains.json`. A lista padrão contém apenas um domínio fictício de exemplo: **adicione indicadores confiáveis para obter alertas úteis**. Isto não é proteção integral em tempo real: o cache DNS não contém necessariamente todas as URLs, não inspeciona HTTPS, não bloqueia tráfego e pode perder resoluções feitas por DNS-over-HTTPS. Não detecta quem está tentando obter seu IP. Um site normalmente recebe seu IP ao estabelecer uma conexão.
+
+Tor Browser **não** é ativado automaticamente por mera exposição de IP: o usuário pode optar por abri-lo pelo comando `redhat tor`, caso já esteja instalado. Ele protege somente as conexões feitas dentro do Tor Browser. O programa não identifica atacantes, não executa retaliação e não garante anonimato.
+
+Para proteção real contra sites perigosos, mantenha Microsoft Defender SmartScreen e os filtros antiphishing do navegador ativados. Uma extensão própria com interceptação de navegação e um serviço de reputação são trabalhos futuros.
