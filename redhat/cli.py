@@ -71,7 +71,7 @@ def do_scan(path):
 def menu():
     while True:
         print(BANNER)
-        print('1 Status | 2 Alertas | 3 Histórico | 4 Verificar arquivo | 5 Sair')
+        print('1 Status | 2 Alertas | 3 Histórico | 4 Verificar arquivo | 5 Tor Browser | 6 Sair')
         c = input('redhat> ').strip()
         if c == '1': status()
         elif c == '2': alerts()
@@ -79,13 +79,16 @@ def menu():
         elif c == '4':
             try: do_scan(input('Caminho do arquivo: ').strip().strip('"'))
             except Exception as e: print('Erro:', e)
-        elif c == '5': break
+        elif c == '5':
+            from . import webshield
+            webshield.open_tor()
+        elif c == '6': break
         else: print('Escolha uma opção válida.')
         input('\nEnter para continuar...')
 
 def main():
     ap = argparse.ArgumentParser(description='RedHat defensive Windows CLI')
-    ap.add_argument('command', nargs='?', choices=['status','alerts','history','scan','daemon'])
+    ap.add_argument('command', nargs='?', choices=['status','alerts','history','scan','daemon','tor','web'])
     ap.add_argument('path', nargs='?')
     ns = ap.parse_args()
     if ns.command == 'status': status()
@@ -95,6 +98,15 @@ def main():
         if not ns.path: ap.error('scan requer caminho de arquivo')
         do_scan(ns.path)
     elif ns.command == 'daemon': core.daemon()
+    elif ns.command == 'tor':
+        from . import webshield
+        webshield.open_tor()
+    elif ns.command == 'web':
+        from . import webshield
+        state = core.load_state()
+        webshield.check(state)
+        core.save_state(state)
+        print('Cache DNS consultado. Alertas no histórico; cobertura parcial, não é firewall.')
     else: menu()
 
 if __name__ == '__main__':
