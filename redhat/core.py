@@ -218,6 +218,7 @@ def daemon(interval=8):
     state = load_state()
     log_event('service', 'info', 'Monitor RedHat iniciado')
     last_defender = 0
+    last_web = 0
     while True:
         try:
             process_downloads(state)
@@ -227,6 +228,13 @@ def daemon(interval=8):
                     process_defender(state)
                 except Exception as exc:
                     log_event('defender', 'warning', 'Não foi possível consultar Microsoft Defender: ' + str(exc))
+            if time.monotonic() - last_web > 20:
+                last_web = time.monotonic()
+                try:
+                    from . import webshield
+                    webshield.check(state)
+                except Exception as exc:
+                    log_event('web', 'warning', 'Monitor DNS indisponível: ' + str(exc))
             save_state(state)
             if severe_unhandled_events():
                 prompt_window()
