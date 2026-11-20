@@ -32,6 +32,18 @@ Copy-Item (Join-Path $root 'redhat') $dest -Recurse -Force
 $launcher = Join-Path $dest 'redhat-monitor.cmd'
 $cmd = '@echo off' + "`r`n" + 'cd /d "%~dp0"' + "`r`n" + '"' + $exe + '" ' + ($pyargs -join ' ') + ' -m redhat daemon' + "`r`n"
 [System.IO.File]::WriteAllText($launcher, $cmd)
+$bin = Join-Path $env:LOCALAPPDATA 'RedHat\\bin'
+New-Item -ItemType Directory -Force $bin | Out-Null
+$cli = Join-Path $bin 'redhat.cmd'
+$cliText = '@echo off' + "`r`n" + 'cd /d "' + $dest + '"' + "`r`n" + '"' + $exe + '" ' + ($pyargs -join ' ') + ' -m redhat %*' + "`r`n"
+[System.IO.File]::WriteAllText($cli, $cliText)
+$userPath = [Environment]::GetEnvironmentVariable('Path','User')
+$parts = @($userPath -split ';' | Where-Object { $_ })
+if ($parts -notcontains $bin) {
+    [Environment]::SetEnvironmentVariable('Path', (($parts + $bin) -join ';'), 'User')
+}
+if (($env:Path -split ';') -notcontains $bin) { $env:Path += ';' + $bin }
+Write-Host 'Comando redhat registrado no PATH do usuario. Abra um novo CMD para usar.'
 $task = 'RedHat Monitor'
 $quotedLauncher = '"' + $launcher + '"'
 & schtasks.exe /Create /SC ONLOGON /TN $task /TR $quotedLauncher /F
