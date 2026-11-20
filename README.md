@@ -1,6 +1,6 @@
 # RedHat 0.1 — Windows Security CLI + background monitor
 
-Protótipo defensivo **em desenvolvimento** para Windows 10/11. CLI e observador são processos separados: fechar o terminal de controle não encerra o monitor instalado. O monitor verifica a pasta Downloads a cada ~8 segundos, consulta novas detecções do Microsoft Defender a cada ~45 segundos, mantém logs JSONL e abre outro CMD quando encontra alertas de risco alto para pedir uma decisão. Nenhum arquivo é colocado em quarentena sem aprovação explícita.
+Protótipo defensivo **em desenvolvimento** para Windows 10/11. CLI e observador são processos separados: fechar o terminal de controle não encerra o monitor instalado. O monitor verifica a pasta Downloads a cada ~8 segundos, solicita análise do Microsoft Defender para novos downloads de tipos executáveis e consulta novas detecções do Defender a cada ~45 segundos, mantém logs JSONL e abre outro CMD quando encontra alertas de risco alto para pedir uma decisão. Nenhum arquivo é colocado em quarentena sem aprovação explícita.
 
 > **IMPORTANTE:** RedHat 0.1 **não substitui um antivírus**, não examina pacotes de rede nem intercepta a navegação, não impede a execução antes do primeiro scan, não prova a segurança de um arquivo e não oferece proteção completa contra phishing em todos os navegadores. Para páginas perigosas, mantenha SmartScreen e a proteção do navegador ligados. A detecção de malware é do Microsoft Defender; o score interno é apenas heurística e pode gerar falsos positivos/negativos.
 
@@ -40,7 +40,7 @@ Se Python não estiver no PATH após instalá-lo, abra outro terminal. A execuç
 - Os registros estão em `%LOCALAPPDATA%\RedHat`; não contêm uploads para serviços externos.
 - O monitor não instala drivers, não desativa Defender, não cria exclusões, não modifica navegador e pode ser removido.
 - O aviso abre um CMD separado; dependendo das políticas do Windows, esse comportamento pode não funcionar em sessões não interativas.
-- O mecanismo interno heurístico alerta sobre **extensões executáveis** e extensões duplas, não identifica famílias específicas de malware.
+- O mecanismo interno heurístico alerta sobre **extensões executáveis** e extensões duplas, não identifica famílias específicas de malware. Apenas alertas de risco alto abrem a CLI automaticamente; outros resultados ficam no histórico.\n- A varredura pode atrasar ou falhar caso o Defender esteja desativado ou o arquivo esteja bloqueado. O alerta não bloqueia preventivamente a execução do download.
 - A proteção de sites depende de tecnologias do Windows/navegador já instaladas. Documentação: [Microsoft Defender SmartScreen](https://learn.microsoft.com/en-us/windows/security/operating-system-security/virus-and-threat-protection/microsoft-defender-smartscreen/) e [Defender PowerShell](https://learn.microsoft.com/en-us/powershell/module/defender/).
 
 ## Próximos marcos
