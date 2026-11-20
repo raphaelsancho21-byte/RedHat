@@ -55,10 +55,8 @@ def alerts():
             elif choice == '2':
                 core.acknowledge(ev['id'], 'reviewed')
     finally:
-        try:
-            core.ALERT.unlink(missing_ok=True)
-        except OSError:
-            pass
+        # Keep a 90-second cooldown so dismissed alerts do not reopen immediately.
+        pass
 
 def history():
     for ev in core.last_events(40):
